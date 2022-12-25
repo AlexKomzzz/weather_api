@@ -1,20 +1,18 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
 
-	weatherapi "github.com/AlexKomzzz/weather_api"
 	"github.com/gin-gonic/gin"
 )
 
 const (
-	urlLocalNoID    = "http://api.openweathermap.org/geo/1.0/direct?q=Moscow&limit=5&appid=%s"
-	urlWetherByCity = ""
+	urlLocalNoID      = "http://api.openweathermap.org/geo/1.0/direct?q=%s&limit=5&appid=%s"
+	urlWeatherByCity  = "https://api.openweathermap.org/data/2.5/weather?lat=%f&lon=%f&units=metric&appid=%s"
+	urlWeatherByCity2 = "https://api.openweathermap.org/data/2.5/weather?q=%s,%s&APPID=%s" // https://api.openweathermap.org/data/2.5/weather?q=London,uk&APPID=2fc5eae2a7d9233fa9e282951d71139d
 )
 
 func (h *Handler) GetWeather(c *gin.Context) {
@@ -32,7 +30,7 @@ func (h *Handler) GetWeather(c *gin.Context) {
 		return
 	}
 
-	URLlocal := fmt.Sprintf(urlLocalNoID, idAPI)
+	URLlocal := fmt.Sprintf(urlLocalNoID, nameCity, idAPI)
 
 	resp, err := http.Get(URLlocal)
 	if err != nil {
@@ -45,20 +43,9 @@ func (h *Handler) GetWeather(c *gin.Context) {
 
 	defer resp.Body.Close()
 
-	var cityArr []weatherapi.City
-
-	data, err := io.ReadAll(resp.Body)
+	cityArr, err := h.services.DecodingCityBodyJSON(resp.Body)
 	if err != nil {
-		log.Println("not found responce by api: ", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	err = json.Unmarshal(data, &cityArr)
-	if err != nil {
-		log.Println("error unmarshal: ", err)
+		log.Println("error decoding data city: ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
@@ -73,8 +60,29 @@ func (h *Handler) GetWeather(c *gin.Context) {
 	city := h.services.GetCity(cityArr, nameCountry)
 
 	// после получения координат города делаем запрос на прогноз погоды
+	URLweatherToCity := fmt.Sprintf(urlWeatherByCity, city.Lat, city.Lon, idAPI)
+
+	resp2, err := http.Get(URLweatherToCity)
+	if err != nil {
+		log.Println("error request2 by weather: ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	defer resp2.Body.Close()
+
+	weather, err := h.services.DecodingWeatherBodyJSON(resp2.Body)
+	if err != nil {
+		log.Println("error decoding data weaather: ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"city": city,
+		"city":    city,
+		"weather": weather,
 	})
 }
