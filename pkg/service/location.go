@@ -1,6 +1,8 @@
 package service
 
 import (
+	"encoding/json"
+	"io"
 	"log"
 
 	weatherapi "github.com/AlexKomzzz/weather_api"
@@ -24,6 +26,24 @@ func (s *Service) GetCity(cityArr []weatherapi.City, country string) weatherapi.
 	}
 
 	log.Println("Нет такой страны в мапе: ", cityArr[0])
-	return cityArr[0]
 
+	return cityArr[0]
+}
+
+func (s *Service) DecodingCityBodyJSON(body io.ReadCloser) ([]weatherapi.City, error) {
+	var cityArr []weatherapi.City
+
+	data, err := io.ReadAll(body)
+	if err != nil {
+		log.Println("not found responce by api: ", err)
+		return nil, err
+	}
+
+	err = json.Unmarshal(data, &cityArr)
+	if err != nil {
+		log.Println("error unmarshal: ", err)
+		return nil, err
+	}
+
+	return cityArr, nil
 }
