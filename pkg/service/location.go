@@ -11,6 +11,9 @@ import (
 func (s *Service) GetCity(cityArr []weatherapi.City, country string) weatherapi.City {
 	// если страну передали, то из выданных городов выбираем город, этой страны
 	// если страну не передали, то выбираем первый город
+	if len(cityArr) == 0 {
+		return weatherapi.City{}
+	}
 
 	if country != "" {
 		// проверка, что у нас в мапе есть такая страна

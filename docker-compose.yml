@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+      image: postgres:latest
+      restart: always
+      container_name: db
+      ports:
+        - 5432:5432
+      volumes:
+        - weath_tom:/var/lib/postgresql/data
+      environment:
+        - POSTGRES_PASSWORD=qwerty
+      networks:
+        net-server:
+
+  api:
+      build:
+        context: .
+        dockerfile: dockerfile
+      container_name: go-api
+      hostname: go-api
+      depends_on:
+        - db
+      ports:
+        - 9090:9090
+      restart: always
+      deploy:
+        restart_policy:
+          condition: on-failure
+      networks:
+        net-server:
+
+networks:
+  net-server:
+    driver: bridge
+
+volumes:
+  weath_tom:
