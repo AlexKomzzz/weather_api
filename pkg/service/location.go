@@ -25,7 +25,7 @@ func (s *Service) GetCity(cityArr []weatherapi.City, country string) weatherapi.
 		}
 	}
 
-	log.Println("Нет такой страны в мапе: ", cityArr[0])
+	log.Println("Страна не задана: ", cityArr[0])
 
 	return cityArr[0]
 }

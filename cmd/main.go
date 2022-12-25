@@ -15,10 +15,15 @@ import (
 const port = ":9090"
 
 func main() {
+	idAPI, ok := os.LookupEnv("idapi")
+	if !ok {
+		log.Fatal("not found IdAPI")
+	}
+
 	countryMap := weatherapi.InitCountryMap()
 
 	service := service.NewService(countryMap)
-	h := handler.NewHandler(service)
+	h := handler.NewHandler(service, idAPI)
 	serv := h.InitServ()
 
 	go func() {
