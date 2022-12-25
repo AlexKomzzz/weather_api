@@ -1,10 +1,17 @@
 package weatherapi
 
 type City struct {
-	Name    string  `json:"name"`
-	Lat     float64 `json:"lat"`
-	Lon     float64 `json:"lon"`
-	Country string  `json:"country"`
+	Coord      `json:"coord"`
+	Name       string  `json:"name"`
+	Lat        float64 `json:"lat"`
+	Lon        float64 `json:"lon"`
+	Country    string  `json:"country"`
+	Population int     `json:"population"`
+}
+
+type Coord struct {
+	Lat float64 `json:"lat"`
+	Lon float64 `json:"lon"`
 }
 
 type Weather struct {
@@ -52,15 +59,38 @@ type Time struct {
 	Dt int `json:"dt"` // Время расчета данных, unix, UTC
 }
 
-type AllWeatherData struct { // структура текущей погоды
-	WethersParam []Weather `json:"weather"`
-	Main         `json:"main"`
-	Visibilitys
-	Wind   `json:"wind"`
-	Clouds `json:"clouds"`
-	Rain   `json:"rain"`
-	Snow   `json:"snow"`
+// структура текущей погоды
+type CurrentWeatherData struct {
 	Time
+	Visibilitys
+	Coord        `json:"coord"`
+	Main         `json:"main"`
+	Wind         `json:"wind"`
+	Clouds       `json:"clouds"`
+	Rain         `json:"rain"`
+	Snow         `json:"snow"`
+	NameCity     string    `json:"name"`
+	WethersParam []Weather `json:"weather"`
+}
+
+type ListFiveDaysWeatherData struct {
+	Time
+	Visibilitys
+	Main         `json:"main"`
+	Clouds       `json:"clouds"`
+	Wind         `json:"wind"`
+	Rain         `json:"rain"`
+	Snow         `json:"snow"`
+	Pop          float64   `json:"pop"`    // Вероятность осадков, %
+	Pod          string    `json:"pod"`    // Часть суток (n - ночь, d - день)
+	DtTXT        string    `json:"dt_txt"` // Прогнозируемое время данных, ISO, UTC
+	WethersParam []Weather `json:"weather"`
+}
+
+// структура погоды на пять дней
+type FiveDaysWeatherData struct {
+	City `json:"city"`
+	List []ListFiveDaysWeatherData `json:"list"`
 }
 
 func InitCountryMap() map[string]string {
